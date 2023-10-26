@@ -14,7 +14,7 @@ DAG_ARGS = {
     "schedule_interval": None,
     "tags": ['imdb', 'ratings', 'dataset', 'extract', 'load'],
     "default_args": {
-        "owner": "Rafael Kehl",
+        "owner": "KehlRafael",
         "start_date": datetime(year=2023, month=1, day=1, hour=0, minute=0),
         "depends_on_past": False,
     },
@@ -99,9 +99,7 @@ def run_sql_file(filepath:str, connection_var:str, split_char:str=';'):
         for command in sql_commands:
             clean_command = clean_sql_command(command)
             if clean_command:
-                result = conn.execute(clean_sql_command(clean_command))
-                logger.info(result)
-
+                conn.execute(clean_command)
 
 
 with DAG('extract_and_load_datasets', **DAG_ARGS) as dag:

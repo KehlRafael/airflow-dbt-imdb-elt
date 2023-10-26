@@ -8,7 +8,7 @@ DAG_ARGS = {
     "schedule_interval": None,
     "tags": ['imdb', 'ratings', 'dataset', 'transform', 'dbt'],
     "default_args": {
-        "owner": "Rafael Kehl",
+        "owner": "KehlRafael",
         "start_date": datetime(year=2023, month=1, day=1, hour=0, minute=0),
         "depends_on_past": False,
     },
@@ -23,6 +23,7 @@ DBT_FOLDER = "/opt/airflow/dbt"
 DBT_PROJECT = "imdb_ratings"
 BASH_COMMAND = f"""cp -R {DBT_FOLDER} /tmp;\
 cd /tmp/dbt/{DBT_PROJECT};\
+dbt test --project-dir /tmp/dbt/{DBT_PROJECT}/ --profiles-dir .;\
 dbt run --project-dir /tmp/dbt/{DBT_PROJECT}/ --profiles-dir .;\
 cat /tmp/dbt/{DBT_PROJECT}/logs/dbt.log;
 """
