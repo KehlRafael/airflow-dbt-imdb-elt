@@ -1,0 +1,24 @@
+
+version: 2
+
+models:
+  - name: stg_series
+    description: Subset of all TV Series of the Title Basics IMDb dataset
+    columns:
+      - name: tconst
+        description: Unique identifier of a title
+        tests:
+          - unique
+          - not_null
+  - name: stg_series_episode
+    description: Subset of all TV Episodes of the Title Basics IMDb dataset
+    columns:
+      - name: tconst
+        description: Unique identifier of a title
+        tests:
+          - unique
+          - not_null
+      - name: parenttconst
+        description: Unique identifier of a title
+        tests:
+          - not_null

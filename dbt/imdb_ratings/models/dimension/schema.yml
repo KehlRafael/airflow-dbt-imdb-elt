@@ -1,0 +1,28 @@
+
+version: 2
+
+models:
+  - name: dim_best_episodes_by_series
+    description: All episodes tied with the highest rating for each series.
+    columns:
+      - name: series_code
+        description: Unique identifier of a title. In this case, of the series.
+        tests:
+          - not_null
+      - name: episode_code
+        description: Unique identifier of a title. In this case, of the episode.
+        tests:
+          - unique
+          - not_null
+  - name: dim_worst_episodes_by_series
+    description: All episodes tied with the lowest rating for each series.
+    columns:
+      - name: series_code
+        description: Unique identifier of a title. In this case, of the series.
+        tests:
+          - not_null
+      - name: episode_code
+        description: Unique identifier of a title. In this case, of the episode.
+        tests:
+          - unique
+          - not_null

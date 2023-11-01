@@ -1,0 +1,12 @@
+imdb_ratings: # this needs to match the profile in your dbt_project.yml file
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: postgres
+      user: airflow
+      password: airflow
+      port: 5432
+      dbname: airflow
+      schema: imdb_ratings
+      connect_timeout: 30

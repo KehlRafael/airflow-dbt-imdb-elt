@@ -1,0 +1,32 @@
+version: 2
+
+sources:
+  - name: raw_imdb
+    description: Schema with raw IMDb title data
+    database: airflow
+    schema: raw_imdb
+    tables:
+      - name: title_basics
+        description: Basic information on titles, such as its the type, title and genre.
+        columns:
+          - name: tconst 
+            description: Unique identifier of a title
+            tests:
+              - not_null
+              - unique
+      - name: title_episode
+        description: Link between series and its episodes.
+        columns:
+          - name: tconst 
+            description: Unique identifier of a title
+            tests:
+              - not_null
+              - unique
+      - name: title_ratings
+        description: Ratings for each title, as well as the number of votes.
+        columns:
+          - name: tconst 
+            description: Unique identifier of a title
+            tests:
+              - not_null
+              - unique
