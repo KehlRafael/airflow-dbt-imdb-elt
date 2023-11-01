@@ -21,11 +21,26 @@ DAG_ARGS = {
 DBT_FOLDER = "/opt/airflow/dbt"
 # Following AWS instructions on running dbt on MWAA
 DBT_PROJECT = "imdb_ratings"
-BASH_COMMAND = f"""cp -R {DBT_FOLDER} /tmp;\
+RUN_COMMAND = f"""cp -R {DBT_FOLDER} /tmp;\
 cd /tmp/dbt/{DBT_PROJECT};\
-dbt test --project-dir /tmp/dbt/{DBT_PROJECT}/ --profiles-dir .;\
 dbt run --project-dir /tmp/dbt/{DBT_PROJECT}/ --profiles-dir .;\
 cat /tmp/dbt/{DBT_PROJECT}/logs/dbt.log;
+"""
+# We copy again to ensure the worker has the files.
+# Important with multiple workers.
+TEST_COMMAND = f"""cp -R {DBT_FOLDER} /tmp;\
+cd /tmp/dbt/{DBT_PROJECT};\
+dbt test --project-dir /tmp/dbt/{DBT_PROJECT}/ --profiles-dir .;\
+cat /tmp/dbt/{DBT_PROJECT}/logs/dbt.log;
+"""
+# This command is copying the docs to the mounted path
+# so we can run `dbt docs serve` locally. Ideally, we should
+# upload these to S3 or a similar service, where we will then
+# be able to host the static website.
+DOCS_COMMAND = f"""cp -R {DBT_FOLDER} /tmp;\
+cd /tmp/dbt/{DBT_PROJECT};\
+dbt docs generate --project-dir /tmp/dbt/{DBT_PROJECT}/ --profiles-dir .;\
+cp -R /tmp/dbt/imdb_ratings/target {DBT_FOLDER}/imdb_ratings;\
 """
 
 with DAG(f'run_{DBT_PROJECT}_bash', **DAG_ARGS) as dag:
@@ -35,11 +50,21 @@ with DAG(f'run_{DBT_PROJECT}_bash', **DAG_ARGS) as dag:
 
     run_dbt = BashOperator(
         task_id='run_dbt_project',
-        bash_command=BASH_COMMAND
+        bash_command=RUN_COMMAND
+    )
+
+    test_dbt = BashOperator(
+        task_id='test_dbt_project',
+        bash_command=TEST_COMMAND
+    )
+
+    generate_docs = BashOperator(
+        task_id='generate_docs',
+        bash_command=DOCS_COMMAND
     )
 
     end = DummyOperator(
         task_id='end'
     )
 
-    begin >> run_dbt >> end
+    begin >> run_dbt >> test_dbt >> generate_docs >> end
