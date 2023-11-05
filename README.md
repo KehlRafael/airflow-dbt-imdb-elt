@@ -69,7 +69,7 @@ To tear down the environment run:
 ```
 docker compose -p imdb_ratings down
 ```
-You can add the `-v` and `--rmi local` flags at the end to also remove volumes and images, respectively, associated with the project.
+You can add the `-v` and `--rmi local` flags at the end to also remove volumes and images, respectively, that are associated with the project.
 
 ### Contact
 If you have any questions, concerns or want to suggest any improvements, please get in touch through my contact infomation availabe at my GitHub profile, [kehlrafael](https://github.com/kehlrafael).
