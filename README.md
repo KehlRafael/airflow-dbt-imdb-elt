@@ -5,7 +5,7 @@ This is a modified version of the [Official Apache Airflow 2.2.2 Docker Compose]
 This is not a production-ready container image and has many issues, such as unencrypted credentials and the use of Airflow's database and credentials by other applications. The goal of this project is to provide a starting point for those that want to learn more about dbt and Airflow.
 
 ## Prerequisites
-This project requires only Docker to run the [ETL DAGs](dags) and [dbt project](dbt). Optionally, you can install `dbt Core 1.2.0` to serve the dbt documentation if you want to.
+This project requires only Docker to run the [ELT DAGs](dags) and [dbt project](dbt). Optionally, you can install `dbt Core 1.2.0` to serve the dbt documentation if you want to.
 
 To install Docker, please refer to their [official website installation guide](https://docs.docker.com/get-docker/). You can look into system specific installation guides below:
 - macOS: [Install Docker Desktop](https://docs.docker.com/desktop/install/mac-install/)
