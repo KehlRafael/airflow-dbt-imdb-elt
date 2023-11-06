@@ -14,7 +14,7 @@ To install Docker, please refer to their [official website installation guide](h
 
 With Docker installed, you are ready to start!
 
-If you want to serve the dbt documentation, make sure you have `python>=3.8` and `pip` installed in your system. Then, to install dbt Core you can follow the [official website installation guide](https://docs.getdbt.com/docs/core/pip-install) and install the Postgres adapter, or simply run the command below:
+If you want to serve the dbt documentation, make sure you have `python>=3.7` and `pip` installed in your system. Then, to install dbt Core you can follow the [official website installation guide](https://docs.getdbt.com/docs/core/pip-install) and install the Postgres adapter, or simply run the command below:
 ```
 pip install dbt-postgres==1.2.0
 ```
