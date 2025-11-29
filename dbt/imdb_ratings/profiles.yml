@@ -4,9 +4,9 @@ imdb_ratings: # this needs to match the profile in your dbt_project.yml file
     dev:
       type: postgres
       host: postgres
-      user: airflow
-      password: airflow
+      user: postgres
+      password: postgres
       port: 5432
-      dbname: airflow
+      dbname: dwh
       schema: imdb_ratings
       connect_timeout: 30
