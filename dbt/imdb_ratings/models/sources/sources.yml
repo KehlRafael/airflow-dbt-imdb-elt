@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: raw_imdb
     description: Schema with raw IMDb title data
-    database: airflow
+    database: dwh
     schema: raw_imdb
     tables:
       - name: title_basics

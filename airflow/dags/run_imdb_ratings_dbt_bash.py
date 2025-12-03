@@ -1,11 +1,11 @@
 from airflow.models import DAG
-from airflow.operators.bash_operator import BashOperator
-from airflow.operators.dummy import DummyOperator
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
 
 from datetime import datetime
 
 DAG_ARGS = {
-    "schedule_interval": None,
+    "schedule": None,
     "tags": ['imdb', 'ratings', 'dataset', 'transform', 'dbt'],
     "default_args": {
         "owner": "KehlRafael",
@@ -19,16 +19,19 @@ DAG_ARGS = {
 
 # Mounted in the `docker-compse.yml` file
 DBT_FOLDER = "/opt/airflow/dbt"
+VENV_FOLDER = "/opt/airflow/.venv"
 # Following AWS instructions on running dbt on MWAA
 DBT_PROJECT = "imdb_ratings"
-RUN_COMMAND = f"""cp -R {DBT_FOLDER} /tmp;\
+RUN_COMMAND = f"""source {VENV_FOLDER}/bin/activate;\
+cp -R {DBT_FOLDER} /tmp;\
 cd /tmp/dbt/{DBT_PROJECT};\
 dbt run --project-dir /tmp/dbt/{DBT_PROJECT}/ --profiles-dir .;\
 cat /tmp/dbt/{DBT_PROJECT}/logs/dbt.log;
 """
 # We copy again to ensure the worker has the files.
 # Important with multiple workers.
-TEST_COMMAND = f"""cp -R {DBT_FOLDER} /tmp;\
+TEST_COMMAND = f"""source {VENV_FOLDER}/bin/activate;\
+cp -R {DBT_FOLDER} /tmp;\
 cd /tmp/dbt/{DBT_PROJECT};\
 dbt test --project-dir /tmp/dbt/{DBT_PROJECT}/ --profiles-dir .;\
 cat /tmp/dbt/{DBT_PROJECT}/logs/dbt.log;
@@ -37,14 +40,15 @@ cat /tmp/dbt/{DBT_PROJECT}/logs/dbt.log;
 # so we can run `dbt docs serve` locally. Ideally, we should
 # upload these to S3 or a similar service, where we will then
 # be able to host the static website.
-DOCS_COMMAND = f"""cp -R {DBT_FOLDER} /tmp;\
+DOCS_COMMAND = f"""source {VENV_FOLDER}/bin/activate;\
+cp -R {DBT_FOLDER} /tmp;\
 cd /tmp/dbt/{DBT_PROJECT};\
 dbt docs generate --project-dir /tmp/dbt/{DBT_PROJECT}/ --profiles-dir .;\
 cp -R /tmp/dbt/imdb_ratings/target {DBT_FOLDER}/imdb_ratings;\
 """
 
 with DAG(f'run_{DBT_PROJECT}_bash', **DAG_ARGS) as dag:
-    begin = DummyOperator(
+    begin = EmptyOperator(
         task_id='begin'
     )
 
@@ -63,7 +67,7 @@ with DAG(f'run_{DBT_PROJECT}_bash', **DAG_ARGS) as dag:
         bash_command=DOCS_COMMAND
     )
 
-    end = DummyOperator(
+    end = EmptyOperator(
         task_id='end'
     )
 

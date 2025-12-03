@@ -1,7 +1,7 @@
 from airflow.models import DAG
 from airflow.models.param import Param
-from airflow.operators.python import PythonOperator
-from airflow.operators.dummy import DummyOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
 
 from sqlalchemy import create_engine
 from datetime import datetime
@@ -11,7 +11,7 @@ import gzip
 import requests
 
 DAG_ARGS = {
-    "schedule_interval": None,
+    "schedule": None,
     "tags": ['imdb', 'ratings', 'dataset', 'extract', 'load'],
     "default_args": {
         "owner": "KehlRafael",
@@ -20,7 +20,7 @@ DAG_ARGS = {
     },
     "params": {
         "rewrite_files": Param(default=False, type="boolean"),
-        "db_conn_var": Param(default='AIRFLOW__CORE__SQL_ALCHEMY_CONN', type="string")
+        "db_conn_var": Param(default='AIRFLOW_CONN_PGDUCKDB_WAREHOUSE', type="string")
     },
     "catchup": False,
     "max_active_runs": 1,
@@ -103,7 +103,7 @@ def run_sql_file(filepath:str, connection_var:str, split_char:str=';'):
 
 
 with DAG('extract_and_load_datasets', **DAG_ARGS) as dag:
-    begin = DummyOperator(
+    begin = EmptyOperator(
         task_id='begin'
     )
 
@@ -133,7 +133,7 @@ with DAG('extract_and_load_datasets', **DAG_ARGS) as dag:
         }
     )
 
-    end = DummyOperator(
+    end = EmptyOperator(
         task_id='end'
     )
 

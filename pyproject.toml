@@ -1,0 +1,9 @@
+[project]
+name = "airflow-dbt-imdb-elt"
+version = "1.0.0"
+description = "Simple dbt pipeline example orchestrated by Airflow"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dbt-postgres>=1.9.1",
+]
