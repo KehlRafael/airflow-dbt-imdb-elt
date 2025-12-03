@@ -1,11 +1,11 @@
 from airflow.models import DAG
-from airflow.operators.bash_operator import BashOperator
-from airflow.operators.dummy import DummyOperator
+from airflow.providers.standard.operators.bash import BashOperator
+from airflow.providers.standard.operators.empty import EmptyOperator
 
 from datetime import datetime
 
 DAG_ARGS = {
-    "schedule_interval": None,
+    "schedule": None,
     "tags": ['imdb', 'ratings', 'dataset', 'transform', 'dbt'],
     "default_args": {
         "owner": "KehlRafael",
@@ -44,7 +44,7 @@ cp -R /tmp/dbt/imdb_ratings/target {DBT_FOLDER}/imdb_ratings;\
 """
 
 with DAG(f'run_{DBT_PROJECT}_bash', **DAG_ARGS) as dag:
-    begin = DummyOperator(
+    begin = EmptyOperator(
         task_id='begin'
     )
 
@@ -63,7 +63,7 @@ with DAG(f'run_{DBT_PROJECT}_bash', **DAG_ARGS) as dag:
         bash_command=DOCS_COMMAND
     )
 
-    end = DummyOperator(
+    end = EmptyOperator(
         task_id='end'
     )
 
