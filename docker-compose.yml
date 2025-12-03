@@ -21,28 +21,35 @@
 # WARNING: This configuration is for local development. Do not use it in a production deployment.
 #
 # This configuration supports basic configuration using environment variables or an .env file
-# The following variables are supported:
+# The following variables are supported (see .env file for defaults):
 #
-# AIRFLOW_IMAGE_NAME           - Docker image name used to run Airflow.
-#                                Default: apache/airflow:3.0.6-python3.12
-# AIRFLOW_UID                  - User ID in Airflow containers
-#                                Default: 50000
-# AIRFLOW_PROJ_DIR             - Base path to which all the files will be volumed.
-#                                Default: .
-# Those configurations are useful mostly in case of standalone testing/running Airflow in test/try-out mode
+# Airflow Configuration:
+# AIRFLOW_UID                      - User ID in Airflow containers (Default: 50000)
+# AIRFLOW_PROJ_DIR                 - Base path to which all the files will be volumed (Default: ./airflow)
+# _AIRFLOW_WWW_USER_USERNAME       - Username for the administrator account (Default: airflow)
+# _AIRFLOW_WWW_USER_PASSWORD       - Password for the administrator account (Default: airflow)
+# _PIP_ADDITIONAL_REQUIREMENTS     - Additional PIP requirements to add when starting all containers
+#                                    Use this option ONLY for quick checks. Installing requirements at container
+#                                    startup is done EVERY TIME the service is started.
+#                                    A better way is to build a custom image or extend the official image
+#                                    as described in https://airflow.apache.org/docs/docker-stack/build.html.
 #
-# _AIRFLOW_WWW_USER_USERNAME   - Username for the administrator account (if requested).
-#                                Default: airflow
-# _AIRFLOW_WWW_USER_PASSWORD   - Password for the administrator account (if requested).
-#                                Default: airflow
-# _PIP_ADDITIONAL_REQUIREMENTS - Additional PIP requirements to add when starting all containers.
-#                                Use this option ONLY for quick checks. Installing requirements at container
-#                                startup is done EVERY TIME the service is started.
-#                                A better way is to build a custom image or extend the official image
-#                                as described in https://airflow.apache.org/docs/docker-stack/build.html.
-#                                Default: ''
+# Airflow Metadata Database:
+# AIRFLOW_POSTGRES_USER            - Airflow metadata database username (Default: airflow)
+# AIRFLOW_POSTGRES_PASSWORD        - Airflow metadata database password (Default: airflow)
+# AIRFLOW_POSTGRES_DB              - Airflow metadata database name (Default: airflow)
 #
-# Feel free to modify this file to suit your needs.
+# Data Warehouse (pgduckdb_warehouse):
+# WAREHOUSE_POSTGRES_USER          - Data warehouse username (Default: postgres)
+# WAREHOUSE_POSTGRES_PASSWORD      - Data warehouse password (Default: postgres)
+# WAREHOUSE_POSTGRES_DB            - Data warehouse database name (Default: dwh)
+# WAREHOUSE_PORT                   - Data warehouse exposed port (Default: 5432)
+#
+# pgAdmin:
+# PGADMIN_DEFAULT_EMAIL            - pgAdmin login email (Default: admin@admin.com)
+# PGADMIN_DEFAULT_PASSWORD         - pgAdmin login password (Default: admin)
+#
+# Feel free to modify the .env file to suit your needs.
 ---
 x-airflow-common:
   &airflow-common
@@ -57,8 +64,8 @@ x-airflow-common:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_POSTGRES_USER}:${AIRFLOW_POSTGRES_PASSWORD}@postgres/${AIRFLOW_POSTGRES_DB}
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://${AIRFLOW_POSTGRES_USER}:${AIRFLOW_POSTGRES_PASSWORD}@postgres/${AIRFLOW_POSTGRES_DB}
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
@@ -75,7 +82,7 @@ x-airflow-common:
     # The following line can be used to set a custom config file, stored in the local config folder
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     # Add PGDUCKDB connection to Airflow connections
-    AIRFLOW_CONN_PGDUCKDB_WAREHOUSE: 'postgresql+psycopg2://postgres:postgres@pgduckdb_warehouse:5432/dwh'
+    AIRFLOW_CONN_PGDUCKDB_WAREHOUSE: postgresql+psycopg2://${WAREHOUSE_POSTGRES_USER}:${WAREHOUSE_POSTGRES_PASSWORD}@pgduckdb_warehouse:${WAREHOUSE_PORT}/${WAREHOUSE_POSTGRES_DB}
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
@@ -94,13 +101,13 @@ x-airflow-common:
 
 services:
   pgduckdb_warehouse:
-    build: ./postgres 
+    image: pgduckdb/pgduckdb:16-main
     ports:
-      - ${PORT:-5432}:5432
+      - ${WAREHOUSE_PORT:-5432}:5432
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: dwh
+      POSTGRES_USER: ${WAREHOUSE_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${WAREHOUSE_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${WAREHOUSE_POSTGRES_DB}
     volumes:
       - warehouse-db-volume:/var/lib/postgresql/data
       - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf
@@ -126,14 +133,14 @@ services:
   postgres:
     image: postgres:13
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_USER: ${AIRFLOW_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${AIRFLOW_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${AIRFLOW_POSTGRES_DB}
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
       - ./data:/sources/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "airflow"]
+      test: ["CMD", "pg_isready", "-U", "${AIRFLOW_POSTGRES_USER}"]
       interval: 10s
       retries: 5
       start_period: 5s
