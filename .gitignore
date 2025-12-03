@@ -1,5 +1,5 @@
 __pycache__*
 *.tsv*
-logs/*
-config/*
+airflow/logs/*
+airflow/config/*
 !.gitkeep

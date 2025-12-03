@@ -43,7 +43,7 @@ dbt docs generate --project-dir /tmp/dbt/{DBT_PROJECT}/ --profiles-dir .;\
 cp -R /tmp/dbt/imdb_ratings/target {DBT_FOLDER}/imdb_ratings;\
 """
 
-with DAG(f'run_{DBT_PROJECT}_bash', **DAG_ARGS) as dag:
+with DAG(f'run_{DBT_PROJECT}_cosmos', **DAG_ARGS) as dag:
     begin = EmptyOperator(
         task_id='begin'
     )
